@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Generate sample logs
+      run: python log_generator.py
+
+    - name: Run analyzer (end-to-end test)
+      run: python analyzer.py --input sample_logs.csv
+
+    - name: Verify output charts exist
+      run: |
+        test -f sample_output/traffic_over_time.png
+        test -f sample_output/anomaly_scatter.png
+        test -f sample_output/top_source_ips.png
+        echo "All output files present ✓"
+
+    - name: Upload charts as artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: charts-python-${{ matrix.python-version }}
+        path: sample_output/
