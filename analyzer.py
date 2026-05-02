@@ -114,7 +114,11 @@ class IsolationForest:
             self.trees.append(tree)
 
         scores = self._raw_scores(X)
-        self.threshold_ = np.percentile(scores, 100 * (1 - self.contamination))
+        # Scores are negative (more negative = more anomalous), so the
+        # contamination quantile lives in the LEFT tail. The previous code
+        # picked 100*(1-c) and flagged scores below that, which inverted the
+        # logic and labeled ~95% of the data as anomalous when c=0.05.
+        self.threshold_ = np.percentile(scores, 100 * self.contamination)
         return self
 
     def _raw_scores(self, X):
@@ -188,14 +192,14 @@ def plot_traffic_timeline(df, output_dir):
     fig, ax = plt.subplots(figsize=(14, 5), facecolor=PALETTE["bg"])
     ax.set_facecolor(PALETTE["bg"])
 
-    hourly = df.set_index("timestamp").resample("H")["bytes_transferred"].sum() / 1e6
+    hourly = df.set_index("timestamp").resample("h")["bytes_transferred"].sum() / 1e6
     ax.fill_between(hourly.index, hourly.values, alpha=0.25, color=PALETTE["normal"])
     ax.plot(hourly.index, hourly.values, color=PALETTE["normal"], linewidth=1.5, label="Traffic (MB/hr)")
 
     # Mark anomaly events
     anomalies = df[df["is_anomaly"]]
     if not anomalies.empty:
-        hourly_anom = anomalies.set_index("timestamp").resample("H").size()
+        hourly_anom = anomalies.set_index("timestamp").resample("h").size()
         for ts, count in hourly_anom.items():
             if count > 0 and ts in hourly.index:
                 ax.axvline(x=ts, color=PALETTE["anomaly"], alpha=0.4, linewidth=1)
