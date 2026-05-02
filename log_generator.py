@@ -116,11 +116,17 @@ def generate_logs(n_records=1000, start_date=None, anomaly_rate=0.04):
     anomaly_indices = set(random.sample(range(n_records), n_anomalies))
     anomaly_types = ["exfil", "scan", "c2"]
 
+    span_days = 30
     for i in range(n_records):
-        # Distribute timestamps across the time range with realistic traffic spikes
-        hour_offset = random.gauss(mu=14 * 3600, sigma=6 * 3600)  # Peak at 2pm
-        hour_offset = max(0, min(hour_offset, 30 * 24 * 3600))
-        ts = start_date + timedelta(seconds=hour_offset + random.randint(-300, 300))
+        # Distribute timestamps across the full 30-day window.
+        # Pick a day uniformly across the span, then sample a time-of-day
+        # from a Gaussian peaked at 14:00 (2pm) with sigma=4h to simulate
+        # realistic business-hours traffic patterns.
+        day_offset = random.randint(0, span_days - 1)
+        time_of_day = random.gauss(mu=14 * 3600, sigma=4 * 3600)
+        time_of_day = max(0, min(time_of_day, 24 * 3600 - 1))
+        jitter = random.randint(-300, 300)
+        ts = start_date + timedelta(days=day_offset, seconds=time_of_day + jitter)
 
         if i in anomaly_indices:
             atype = random.choice(anomaly_types)
