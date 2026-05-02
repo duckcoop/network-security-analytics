@@ -1,6 +1,6 @@
 # Network Security Analytics Tool
 
-![CI](https://github.com/cooperpreston43/network-security-analytics/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/duckcoop/network-security-analytics/actions/workflows/ci.yml/badge.svg)
 ![Python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -38,7 +38,7 @@ Built from scratch in Python: log ingestion → cleaning → feature engineering
 
 ```bash
 # Clone
-git clone https://github.com/cooperpreston43/network-security-analytics.git
+git clone https://github.com/duckcoop/network-security-analytics.git
 cd network-security-analytics
 
 # Install dependencies
