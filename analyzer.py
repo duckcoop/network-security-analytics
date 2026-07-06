@@ -114,7 +114,7 @@ class IsolationForest:
             self.trees.append(tree)
 
         scores = self._raw_scores(X)
-        self.threshold_ = np.percentile(scores, 100 * (1 - self.contamination))
+        self.threshold_ = np.percentile(scores, 100 * self.contamination)
         return self
 
     def _raw_scores(self, X):
